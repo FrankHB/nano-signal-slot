@@ -51,12 +51,8 @@ class Evf
 
     NOINLINE(static double destruction(std::size_t N))
     {
-        Rng_t rng;
+        auto randomized(make_random_sequence<std::size_t, Rng_t>(N)); Rng_t rng;
         std::size_t count = 1, elapsed = 0;
-
-        std::vector<std::size_t> randomized(N);
-        std::generate(randomized.begin(), randomized.end(), IncrementFill());
-        std::shuffle(randomized.begin(), randomized.end(), rng);
 
         using std::placeholders::_1;
 
@@ -84,13 +80,9 @@ class Evf
 
     NOINLINE(static double connection(std::size_t N))
     {
-        Rng_t rng;
+        auto randomized(make_random_sequence<std::size_t, Rng_t>(N)); Rng_t rng;
         std::size_t count = 1, elapsed = 0;
 
-        std::vector<std::size_t> randomized(N);
-        std::generate(randomized.begin(), randomized.end(), IncrementFill());
-        std::shuffle(randomized.begin(), randomized.end(), rng);
-        
         using std::placeholders::_1;
 
         for (; elapsed < g_limit; ++count)
@@ -115,13 +107,9 @@ class Evf
 
     NOINLINE(static double emission(std::size_t N))
     {
-        Rng_t rng;
+        auto randomized(make_random_sequence<std::size_t, Rng_t>(N)); Rng_t rng;
         std::size_t count = 1, elapsed = 0;
 
-        std::vector<std::size_t> randomized(N);
-        std::generate(randomized.begin(), randomized.end(), IncrementFill());
-        std::shuffle(randomized.begin(), randomized.end(), rng);
-        
         using std::placeholders::_1;
 
         for (; elapsed < g_limit; ++count)
@@ -147,13 +135,9 @@ class Evf
 
     NOINLINE(static double combined(std::size_t N))
     {
-        Rng_t rng;
+        auto randomized(make_random_sequence<std::size_t, Rng_t>(N)); Rng_t rng;
         std::size_t count = 1;
 
-        std::vector<std::size_t> randomized(N);
-        std::generate(randomized.begin(), randomized.end(), IncrementFill());
-        std::shuffle(randomized.begin(), randomized.end(), rng);
-        
         using std::placeholders::_1;
 
         timer.reset();

@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <random>
+#include <numeric>
 #include <algorithm>
 #include <memory>
 #include <vector>
@@ -52,12 +53,23 @@ class chrono_timer
     }
 };
 
-// Functors
-struct IncrementFill
+template<typename T, class R, typename FI>
+void
+sequence_shuffle(FI first, FI last, R& rng, T val = 0)
 {
-    std::size_t i;
-    IncrementFill ( ) : i(0) { }
-    std::size_t operator()() { return i++; }
-};
+    std::iota(first, last, val);
+    std::shuffle(first, last, rng);
+}
+
+template<typename T, class R>
+std::vector<T>
+make_random_sequence(size_t n)
+{
+	R rng;
+	std::vector<std::size_t> vec(n);
+
+	sequence_shuffle<std::size_t>(vec.begin(), vec.end(), rng);
+	return std::move(vec);
+}
 
 #endif // BENCHMARK_HPP
