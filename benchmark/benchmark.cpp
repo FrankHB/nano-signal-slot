@@ -16,8 +16,8 @@
 using Table = std::map<std::string, std::vector<double>>;
 using DataBase = std::map<std::string, Table>;
 
-//std::size_t g_limit = Timer_u(Limit_u(4)).count();
-std::size_t g_limit = 40000000;
+std::size_t g_limit = Timer_u(Limit_u(4)).count();
+//std::size_t g_limit = 40000000;
 
 //------------------------------------------------------------------------------
 
