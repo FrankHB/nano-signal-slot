@@ -1,7 +1,7 @@
 #include "benchmark.hpp"
 
-#include "bs1_benchmark.hpp"
-#include "bs2_benchmark.hpp"
+#include "connect.hpp"
+
 #include "evl_benchmark.hpp"
 #if USE_EvilTwin_Ext
 #	include "evf_benchmark.hpp"

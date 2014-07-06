@@ -94,10 +94,9 @@ public:
 		static_cast<void>(a);
     }
 
-	NOINLINE(static void
-		do_connect(Subject& subject, Foo& foo))
+	NOINLINE(static void do_connect(Subject& subject, Foo& foo))
 	{
-		connect(subject, std::bind(&Foo::handler, &foo, std::placeholders::_1));
+		connect(subject, &Foo::handler, foo);
 	}
 
     NOINLINE(static double construction(std::size_t N))
@@ -111,7 +110,7 @@ public:
 			std::unique_ptr<Subject> subject(new Subject());
             std::vector<Foo> foo_array(N);
 
-			do_connect(*subject, std::ref(foo_array.back()));
+			do_connect(*subject, foo_array.back());
             elapsed += timer.count<Timer_u>();
         }
         return N / std::chrono::duration_cast<Delta_u>
@@ -131,7 +130,7 @@ public:
                 std::vector<Foo> foo_array(N);
 
                 for (auto index : randomized)
-					Foo::do_connect(*subject, std::ref(foo_array[index]));
+					Foo::do_connect(*subject, foo_array[index]);
                 timer.reset();
             }
             elapsed += timer.count<Timer_u>();
@@ -153,7 +152,7 @@ public:
 
             timer.reset();
             for (auto index : randomized)
-				do_connect(subject, std::ref(foo_array[index]));
+				do_connect(subject, foo_array[index]);
             elapsed += timer.count<Timer_u>();
         }
         return N / std::chrono::duration_cast<Delta_u>
@@ -172,7 +171,7 @@ public:
             std::vector<Foo> foo_array(N);
 
             for (auto index : randomized)
-				do_connect(subject, std::ref(foo_array[index]));
+				do_connect(subject, foo_array[index]);
             timer.reset();
             subject(rng);
             elapsed += timer.count<Timer_u>();
@@ -195,7 +194,7 @@ public:
             std::vector<Foo> foo_array(N);
 
             for (auto index : randomized)
-				do_connect(subject, std::ref(foo_array[index]));
+				do_connect(subject, foo_array[index]);
             subject(rng);
         }
         return N / std::chrono::duration_cast<Delta_u>
