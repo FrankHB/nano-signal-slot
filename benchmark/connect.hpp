@@ -7,6 +7,7 @@
 
 #include <boost/signals.hpp>
 #include <boost/signals2.hpp>
+#include "lib/jl_signal/Signal.h"
 
 namespace Benchmark
 {
@@ -29,6 +30,16 @@ void connect(boost::signals2::signal<void(Rng_t&)>& subject, PMF pmf, C& obj)
 
 using Bs2 = SignalSlotBenchmark<boost::signals2::signal<void(Rng_t&)>,
 	boost::signals2::trackable>;
+
+
+template<typename PMF, typename C>
+void connect(jl::Signal<void(Rng_t&)>& subject, PMF pmf, C& obj)
+{
+	subject.Connect(&obj, pmf);
+}
+
+using Jls = SignalSlotBenchmark<jl::Signal<void(Rng_t&)>,
+	jl::SignalObserver>;
 
 } // namespace Benchmark;
 

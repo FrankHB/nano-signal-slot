@@ -7,7 +7,6 @@
 #	include "evf_benchmark.hpp"
 #	include "evs_benchmark.hpp"
 #endif
-#include "jls_benchmark.hpp"
 #include "nss_benchmark.hpp"
 #include "s11_benchmark.hpp"
 #if USE_YSLib
