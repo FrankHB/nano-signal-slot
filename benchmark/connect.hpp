@@ -14,6 +14,7 @@
 #	include "lib/eviltwin/observer_fork.hpp"
 #	include "lib/eviltwin/observer_safe.hpp"
 #endif
+#include "../nano_signal_slot.hpp"
 
 namespace Benchmark
 {
@@ -78,6 +79,16 @@ struct EvsReg
 
 using Evs = SignalSlotBenchmark<obs::Subject<void(Rng_t&)>, EvsReg>;
 #endif
+
+
+template<typename PMF, typename C>
+void connect(Nano::Signal<void(Rng_t&)>& subject, PMF, C& obj)
+{
+	subject.connect<C, &C::handler>(obj);
+}
+
+using Nss = SignalSlotBenchmark<Nano::Signal<void(Rng_t&)>,
+	Nano::Observer>;
 
 } // namespace Benchmark;
 
