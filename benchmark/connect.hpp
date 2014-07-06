@@ -8,6 +8,7 @@
 #include <boost/signals.hpp>
 #include <boost/signals2.hpp>
 #include "lib/jl_signal/Signal.h"
+#include "lib/jl_signal/StaticSignalConnectionAllocators.h"
 #include "lib/eviltwin/observer.hpp"
 #include <forward_list>
 #if USE_EvilTwin_Ext
@@ -18,6 +19,9 @@
 #include "lib/signal11/Signal.h"
 #if USE_YSLib
 #	include "YSLib/Core/yevt.hpp"
+#endif
+#if USE_StdFunction
+#	include <functional>
 #endif
 
 namespace Benchmark
@@ -117,6 +121,16 @@ void connect(YSLib::GEvent<void(Rng_t&)>& subject, PMF pmf, C& obj)
 }
 
 using Ys = SignalSlotBenchmark<YSLib::GEvent<void(Rng_t&)>>;
+#endif
+
+#if USE_StdFunction
+template<typename PMF, typename C>
+void connect(std::function<void(Rng_t&)>& subject, PMF pmf, C& obj)
+{
+	subject = std::bind(pmf, &obj, std::placeholders::_1);
+}
+
+using Fn = SignalSlotBenchmark<std::function<void(Rng_t&)>>;
 #endif
 
 } // namespace Benchmark;

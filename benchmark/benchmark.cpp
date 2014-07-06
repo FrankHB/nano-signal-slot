@@ -2,13 +2,6 @@
 
 #include "connect.hpp"
 
-#if USE_StdFunction
-#	include "fn_benchmark.hpp"
-#endif
-
-#include "lib/jl_signal/Signal.h"
-#include "lib/jl_signal/StaticSignalConnectionAllocators.h"
-
 #include <iostream>
 #include <fstream>
 #include <iomanip>
