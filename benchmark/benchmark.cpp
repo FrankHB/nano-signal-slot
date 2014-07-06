@@ -6,6 +6,12 @@
 #include "jls_benchmark.hpp"
 #include "nss_benchmark.hpp"
 #include "s11_benchmark.hpp"
+#if USE_YSLib
+#	include "ys_benchmark.hpp"
+#endif
+#if USE_StdFunction
+#	include "fn_benchmark.hpp"
+#endif
 
 #include "lib/jl_signal/Signal.h"
 #include "lib/jl_signal/StaticSignalConnectionAllocators.h"
@@ -20,8 +26,8 @@
 using Table = std::map<const char*, std::vector<double>>;
 using DataBase = std::map<const char*, Table>;
 
-std::size_t g_limit = Timer_u(Limit_u(4)).count();
-//std::size_t g_limit = 40000000;
+//std::size_t g_limit = Timer_u(Limit_u(4)).count();
+std::size_t g_limit = 40000000;
 
 //------------------------------------------------------------------------------
 
@@ -121,6 +127,26 @@ int main(int argc, char* argv[])
         s11["connection"].emplace_back(S11::connection(N));
         s11["emission"].emplace_back(S11::emission(N));
         s11["combined"].emplace_back(S11::combined(N));
+
+#if USE_YSLib
+        auto& ys = records["YSLib GEvent"];
+        ys["construction"].emplace_back(Ys::construction(N));
+        ys["destruction"].emplace_back(Ys::destruction(N));
+        ys["connection"].emplace_back(Ys::connection(N));
+        ys["emission"].emplace_back(Ys::emission(N));
+        ys["combined"].emplace_back(Ys::combined(N));
+#endif
+
+		// Pseudo signal-slot.
+#if USE_StdFunction
+        auto& fn = records["std::function"];
+        fn["construction"].emplace_back(Fn::construction(N));
+        fn["destruction"].emplace_back(Fn::destruction(N));
+        fn["connection"].emplace_back(Fn::connection(N));
+        fn["emission"].emplace_back(Fn::emission(N));
+        fn["combined"].emplace_back(Fn::combined(N));
+#endif
+
     }
     if (std::ofstream ofs{"report.txt", std::ios::app})
     {
