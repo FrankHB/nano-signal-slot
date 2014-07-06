@@ -16,6 +16,9 @@
 #endif
 #include "../nano_signal_slot.hpp"
 #include "lib/signal11/Signal.h"
+#if USE_YSLib
+#	include "YSLib/Core/yevt.hpp"
+#endif
 
 namespace Benchmark
 {
@@ -104,6 +107,17 @@ struct S11Reg
 };
 
 using S11 = SignalSlotBenchmark<Signal11::Signal<void(Rng_t&)>, S11Reg>;
+
+
+#if USE_YSLib
+template<typename PMF, typename C>
+void connect(YSLib::GEvent<void(Rng_t&)>& subject, PMF pmf, C& obj)
+{
+	subject += std::bind(pmf, &obj, std::placeholders::_1);
+}
+
+using Ys = SignalSlotBenchmark<YSLib::GEvent<void(Rng_t&)>>;
+#endif
 
 } // namespace Benchmark;
 

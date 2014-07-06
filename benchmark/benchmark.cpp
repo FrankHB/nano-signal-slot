@@ -2,9 +2,6 @@
 
 #include "connect.hpp"
 
-#if USE_YSLib
-#	include "ys_benchmark.hpp"
-#endif
 #if USE_StdFunction
 #	include "fn_benchmark.hpp"
 #endif
