@@ -1,15 +1,10 @@
 #ifndef EVS_BENCHMARK_HPP
 #define EVS_BENCHMARK_HPP
 
-#include "lib/eviltwin/observer_safe.hpp"
-
-#include "chrono_timer.hpp"
 #include "benchmark.hpp"
-
 #include <forward_list>
-#include <algorithm>
-#include <memory>
-#include <vector>
+
+#include "lib/eviltwin/observer_safe.hpp"
 
 namespace Benchmark
 {

@@ -2,13 +2,7 @@
 #define Ys_BENCHMARK_HPP
 
 #include "YSLib/Core/yevt.hpp"
-
-#include "chrono_timer.hpp"
 #include "benchmark.hpp"
-
-#include <algorithm>
-#include <memory>
-#include <vector>
 
 namespace Benchmark
 {

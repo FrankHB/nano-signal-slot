@@ -1,17 +1,12 @@
 #ifndef BS1_BENCHMARK_HPP
 #define BS1_BENCHMARK_HPP
 
+#include "benchmark.hpp"
+
 #define BOOST_SIGNALS_NO_DEPRECATION_WARNING
 
 #include <boost/signals.hpp>
 #include <boost/bind.hpp>
-
-#include "chrono_timer.hpp"
-#include "benchmark.hpp"
-
-#include <algorithm>
-#include <memory>
-#include <vector>
 
 namespace Benchmark
 {

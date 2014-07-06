@@ -1,14 +1,9 @@
 #ifndef JLS_BENCHMARK_HPP
 #define JLS_BENCHMARK_HPP
 
-#include "lib/jl_signal/Signal.h"
-
-#include "chrono_timer.hpp"
 #include "benchmark.hpp"
 
-#include <algorithm>
-#include <memory>
-#include <vector>
+#include "lib/jl_signal/Signal.h"
 
 namespace Benchmark
 {

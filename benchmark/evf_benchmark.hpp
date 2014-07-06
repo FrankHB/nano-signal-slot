@@ -1,15 +1,10 @@
 #ifndef EVF_BENCHMARK_HPP
 #define EVF_BENCHMARK_HPP
 
-#include "lib/eviltwin/observer_fork.hpp"
-
-#include "chrono_timer.hpp"
 #include "benchmark.hpp"
-
 #include <forward_list>
-#include <algorithm>
-#include <memory>
-#include <vector>
+
+#include "lib/eviltwin/observer_fork.hpp"
 
 namespace Benchmark
 {

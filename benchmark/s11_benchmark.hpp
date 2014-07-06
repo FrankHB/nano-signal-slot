@@ -1,14 +1,9 @@
 #ifndef S11_BENCHMARK_HPP
 #define S11_BENCHMARK_HPP
 
-#include "lib/signal11/Signal.h"
-
-#include "chrono_timer.hpp"
 #include "benchmark.hpp"
 
-#include <algorithm>
-#include <memory>
-#include <vector>
+#include "lib/signal11/Signal.h"
 
 namespace Benchmark
 {

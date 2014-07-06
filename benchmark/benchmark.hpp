@@ -3,6 +3,10 @@
 
 #include <chrono>
 #include <random>
+#include <algorithm>
+#include <memory>
+#include <vector>
+#include <thread>
 
 // Friendly macro definitions
 #if _MSC_VER >= 1400
@@ -23,6 +27,30 @@ typedef std::uniform_int_distribution<std::size_t> Eng_t;
 typedef std::chrono::seconds Limit_u;
 typedef std::chrono::nanoseconds Timer_u;
 typedef std::chrono::duration<double, std::milli> Delta_u;
+
+class chrono_timer
+{
+    std::chrono::time_point<std::chrono::high_resolution_clock> m_start;
+
+    public:
+
+    void reset()
+    {
+        m_start = std::chrono::high_resolution_clock::now();
+    }
+
+    template <typename T>
+    static void delay(std::size_t duration)
+    {
+        std::this_thread::sleep_for(T(duration));
+    }
+    template <typename T>
+    std::size_t count() const
+    {
+        return std::chrono::duration_cast<T>
+          (std::chrono::high_resolution_clock::now() - m_start).count();
+    }
+};
 
 // Functors
 struct IncrementFill

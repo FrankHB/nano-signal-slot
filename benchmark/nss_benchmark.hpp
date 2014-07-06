@@ -1,14 +1,9 @@
 #ifndef NSS_BENCHMARK_HPP
 #define NSS_BENCHMARK_HPP
 
-#include "../nano_signal_slot.hpp"
-
-#include "chrono_timer.hpp"
 #include "benchmark.hpp"
 
-#include <algorithm>
-#include <memory>
-#include <vector>
+#include "../nano_signal_slot.hpp"
 
 namespace Benchmark
 {

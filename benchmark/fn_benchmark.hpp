@@ -1,14 +1,9 @@
 #ifndef Fn_BENCHMARK_HPP
 #define Fn_BENCHMARK_HPP
 
-#include <functional>
-
-#include "chrono_timer.hpp"
 #include "benchmark.hpp"
 
-#include <algorithm>
-#include <memory>
-#include <vector>
+#include <functional>
 
 namespace Benchmark
 {

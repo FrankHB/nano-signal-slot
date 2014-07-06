@@ -1,15 +1,10 @@
 #ifndef BS2_BENCHMARK_HPP
 #define BS2_BENCHMARK_HPP
 
-#include <boost/signals2.hpp>
-#include <boost/bind.hpp>
-
-#include "chrono_timer.hpp"
 #include "benchmark.hpp"
 
-#include <algorithm>
-#include <memory>
-#include <vector>
+#include <boost/signals2.hpp>
+#include <boost/bind.hpp>
 
 namespace Benchmark
 {
