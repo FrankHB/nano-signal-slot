@@ -15,6 +15,7 @@
 #	include "lib/eviltwin/observer_safe.hpp"
 #endif
 #include "../nano_signal_slot.hpp"
+#include "lib/signal11/Signal.h"
 
 namespace Benchmark
 {
@@ -89,6 +90,20 @@ void connect(Nano::Signal<void(Rng_t&)>& subject, PMF, C& obj)
 
 using Nss = SignalSlotBenchmark<Nano::Signal<void(Rng_t&)>,
 	Nano::Observer>;
+
+
+template<typename PMF, typename C>
+void connect(Signal11::Signal<void(Rng_t&)>& subject, PMF pmf, C& obj)
+{
+	obj.reg += subject.connect(&obj, pmf);
+}
+
+struct S11Reg
+{
+	Signal11::ConnectionScope reg;
+};
+
+using S11 = SignalSlotBenchmark<Signal11::Signal<void(Rng_t&)>, S11Reg>;
 
 } // namespace Benchmark;
 

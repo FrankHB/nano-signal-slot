@@ -2,7 +2,6 @@
 
 #include "connect.hpp"
 
-#include "s11_benchmark.hpp"
 #if USE_YSLib
 #	include "ys_benchmark.hpp"
 #endif

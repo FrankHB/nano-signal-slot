@@ -80,6 +80,22 @@ struct NoTrack
 {};
 
 
+template<typename F, typename... P>
+static auto
+emit(F&& f, P&&... args) -> decltype(static_cast<F&&>(f)(
+	static_cast<P&&>(args)...))
+{
+	static_cast<F&&>(f)(static_cast<P&&>(args)...);
+}
+template<typename F, typename... P>
+static auto
+emit(F&& f, P&&... args) -> decltype(static_cast<F&&>(f).emit(
+	static_cast<P&&>(args)...))
+{
+	static_cast<F&&>(f).emit(static_cast<P&&>(args)...);
+}
+
+
 template<class Subject, class Base = NoTrack>
 class SignalSlotBenchmark : public Base
 {
@@ -173,7 +189,7 @@ public:
             for (auto index : randomized)
 				do_connect(subject, foo_array[index]);
             timer.reset();
-            subject(rng);
+            emit(subject, rng);
             elapsed += timer.count<Timer_u>();
         }
         return N / std::chrono::duration_cast<Delta_u>
@@ -195,7 +211,7 @@ public:
 
             for (auto index : randomized)
 				do_connect(subject, foo_array[index]);
-            subject(rng);
+            emit(subject, rng);
         }
         return N / std::chrono::duration_cast<Delta_u>
             (Timer_u(g_limit / count)).count();
