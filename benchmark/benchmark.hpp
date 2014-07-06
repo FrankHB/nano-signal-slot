@@ -32,34 +32,4 @@ struct IncrementFill
     std::size_t operator()() { return i++; }
 };
 
-// Global Free Functions
-std::size_t round_2_up(std::size_t n)
-{
-    if (n & (n - 1))
-    {
-        do
-        {
-            n = n & (n - 1);
-        }
-        while (n & (n - 1));
-
-        return n << 1;
-    }
-    return n;
-}
-std::size_t round_2_down(std::size_t n)
-{
-    if (n & (n - 1))
-    {
-        do
-        {
-            n = n & (n - 1);
-        }
-        while (n & (n - 1));
-
-        return n;
-    }
-    return n;
-}
-
 #endif // BENCHMARK_HPP
