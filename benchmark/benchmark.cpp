@@ -2,11 +2,6 @@
 
 #include "connect.hpp"
 
-#include "evl_benchmark.hpp"
-#if USE_EvilTwin_Ext
-#	include "evf_benchmark.hpp"
-#	include "evs_benchmark.hpp"
-#endif
 #include "nss_benchmark.hpp"
 #include "s11_benchmark.hpp"
 #if USE_YSLib
