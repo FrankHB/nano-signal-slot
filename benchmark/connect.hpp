@@ -123,7 +123,7 @@ void connect(YSLib::GEvent<void(Rng_t&)>& subject, PMF pmf, C& obj)
 using Ys = SignalSlotBenchmark<YSLib::GEvent<void(Rng_t&)>>;
 #endif
 
-#if USE_StdFunction
+#if USE_Pseudo
 template<typename PMF, typename C>
 void connect(std::function<void(Rng_t&)>& subject, PMF pmf, C& obj)
 {
@@ -131,6 +131,20 @@ void connect(std::function<void(Rng_t&)>& subject, PMF pmf, C& obj)
 }
 
 using Fn = SignalSlotBenchmark<std::function<void(Rng_t&)>>;
+
+template<typename PMF, typename C>
+void connect(std::pair<void*, void*>& subject, PMF, C& obj)
+{
+	subject = {&obj, nullptr};
+}
+
+using FnRaw = SignalSlotBenchmark<std::pair<void*, void*>>;
+
+template<typename PMF, typename C>
+void connect(int&, PMF, C&)
+{}
+
+using FnNoOp = SignalSlotBenchmark<int>;
 #endif
 
 } // namespace Benchmark;

@@ -94,6 +94,14 @@ emit(F&& f, P&&... args) -> decltype(static_cast<F&&>(f).emit(
 {
 	static_cast<F&&>(f).emit(static_cast<P&&>(args)...);
 }
+template<typename T1, typename T2, typename... P>
+static void
+emit(std::pair<T1, T2>, P&&...)
+{}
+template<typename... P>
+static void
+emit(int, P&&...)
+{}
 
 
 template<class Subject, class Base = NoTrack>

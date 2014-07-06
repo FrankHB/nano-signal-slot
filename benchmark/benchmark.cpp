@@ -1,3 +1,6 @@
+// g++ -O3 -s -std=c++11 benchmark.cpp lib/jl_signal/*.cpp
+//	-llibboost_signals-mt -I/usr/include
+//	-DUSE_EvilTwin_Ext=1 -DUSE_YSLib=1 -DUSE_Pseudo=1
 #include "benchmark.hpp"
 
 #include "connect.hpp"
@@ -81,9 +84,11 @@ int main(int argc, char* argv[])
 #if USE_YSLib
 		test<Ys>("YSLib GEvent", records, i);
 #endif
-#if USE_StdFunction
+#if USE_Pseudo
 		// Pseudo signal-slot.
 		test<Fn>("std::function", records, i);
+		test<FnRaw>("raw data copy", records, i);
+		test<FnNoOp>("no-op", records, i);
 #endif
     }
     if (std::ofstream ofs{"report.txt", std::ios::app})
