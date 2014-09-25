@@ -22,10 +22,8 @@ const std::size_t c_jlsignal_max = 9001;
 
 // General typedefs
 typedef std::minstd_rand Rng_t;
-typedef std::uniform_int_distribution<std::size_t> Eng_t;
 
 // Unit related typedefs
-typedef std::chrono::seconds Limit_u;
 typedef std::chrono::nanoseconds Timer_u;
 typedef std::chrono::duration<double, std::milli> Delta_u;
 
