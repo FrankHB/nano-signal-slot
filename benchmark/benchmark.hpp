@@ -6,10 +6,8 @@
 #include <numeric>
 #include <algorithm>
 #include <memory>
-#include <string>
-#include <vector>
-#include <forward_list>
-#include <map>
+#include <ytest/timing.hpp>
+#include <YSLib/Adaptor/ycont.h>
 
 #define NOINLINE __attribute__ ((noinline))
 
@@ -18,6 +16,7 @@ using std::vector;
 using std::string;
 using std::size_t;
 using std::forward_list;
+using namespace ytest::timing;
 
 namespace Benchmark
 {
@@ -61,35 +60,24 @@ make_random_sequence(size_t n)
 	return std::move(vec);
 }
 
-inline high_resolution_clock::time_point
-get_now()
+template<typename _fCallable, typename _tDuration, typename Ret = double>
+NOINLINE Ret
+do_test(_fCallable f, _tDuration limit)
 {
-	return high_resolution_clock::now();
+	return duration_cast<duration<Ret>>(average_in_duration(f, limit)).count();
 }
 
-template<typename F, typename LimitType, typename Ret = double>
+template<typename _fCallable, typename _tDuration, typename Ret = double>
 NOINLINE Ret
-do_test(F f, LimitType limit)
+do_test_combined(_fCallable f, _tDuration limit)
 {
-	size_t cnt(1);
-	auto elapsed = LimitType();
-
-	for(; elapsed < limit; ++cnt)
-		elapsed += duration_cast<LimitType>(f());
-	return duration_cast<duration<Ret>>(elapsed / cnt).count();
-}
-
-template<typename F, typename LimitType, typename Ret = double>
-NOINLINE Ret
-do_test_combined(F f, LimitType limit)
-{
-	size_t cnt(1);
-	auto elapsed = LimitType();
-
-	for(auto now(get_now());
-		(elapsed = duration_cast<LimitType>(get_now() - now)) < limit; ++cnt)
-		f();
-	return duration_cast<duration<Ret>>(elapsed / cnt).count();
+	return duration_cast<duration<Ret>>(average_elapsed<_tDuration>(
+		[&, limit, f](size_t& cnt, _tDuration& elapsed){
+		for(auto now(high_resolution_clock::now()); (elapsed
+			= duration_cast<_tDuration>(high_resolution_clock::now() - now))
+			< limit; ++cnt)
+			f();
+	})).count();
 }
 
 
@@ -125,10 +113,10 @@ public:
 		return n / do_test([this, n]{
 			std::unique_ptr<Subject> subject(new Subject());
 			vector<ThisType> arr(n);
-			auto now(get_now());
 
-			do_connect(*subject, arr.back());
-			return get_now() - now;
+			return once(high_resolution_clock::now, [&]{
+				do_connect(*subject, arr.back());
+			});
 		}, Limit);
 	}
 
@@ -138,16 +126,14 @@ public:
 		auto randomized(make_random_sequence<size_t, minstd_rand>(n));
 
 		return n / do_test([&, this, n]{
-			auto now(get_now());
-			{
-				std::unique_ptr<Subject> subject(new Subject());
-				vector<ThisType> arr(n);
+			std::unique_ptr<Subject> subject(new Subject());
+			vector<ThisType> arr(n);
 
-				for(const auto index : randomized)
-					ThisType::do_connect(*subject, arr[index]);
-				now = get_now();
-			}
-			return get_now() - now;
+			for(const auto index : randomized)
+				ThisType::do_connect(*subject, arr[index]);
+			return once(high_resolution_clock::now, [&]{
+				subject.reset();
+			});
 		}, Limit);
 	}
 
@@ -159,11 +145,10 @@ public:
 		return n / do_test([&, this, n]{
 			Subject subject;
 			vector<ThisType> arr(n);
-			auto now(get_now());
-
-			for(const auto index : randomized)
-				do_connect(subject, arr[index]);
-			return get_now() - now;
+			return once(high_resolution_clock::now, [&]{
+				for(const auto index : randomized)
+					do_connect(subject, arr[index]);
+			});
 		}, Limit);
 	}
 
@@ -179,11 +164,9 @@ public:
 
 			for(auto index : randomized)
 				do_connect(subject, arr[index]);
-
-			auto now(get_now());
-
-			emit(subject, rng);
-			return get_now() - now;
+			return once(high_resolution_clock::now, [&]{
+				emit(subject, rng);
+			});
 		}, Limit);
 	}
 
