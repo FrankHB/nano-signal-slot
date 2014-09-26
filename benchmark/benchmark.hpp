@@ -6,89 +6,36 @@
 #include <numeric>
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <vector>
-#include <thread>
+#include <forward_list>
+#include <map>
 
-// Friendly macro definitions
-#if _MSC_VER >= 1400
-#define NOINLINE(s) __declspec(noinline) s
-#else
-#define NOINLINE(s) s __attribute__ ((noinline))
-#endif
+#define NOINLINE __attribute__ ((noinline))
 
-// Globals
-extern std::size_t g_limit;
-const std::size_t c_jlsignal_max = 9001;
-
-// General typedefs
-typedef std::minstd_rand Rng_t;
-
-// Unit related typedefs
-typedef std::chrono::nanoseconds Timer_u;
-typedef std::chrono::duration<double, std::milli> Delta_u;
-
-class chrono_timer
-{
-    std::chrono::time_point<std::chrono::high_resolution_clock> m_start;
-
-    public:
-
-    void reset()
-    {
-        m_start = std::chrono::high_resolution_clock::now();
-    }
-
-    template <typename T>
-    static void delay(std::size_t duration)
-    {
-        std::this_thread::sleep_for(T(duration));
-    }
-    template <typename T>
-    std::size_t count() const
-    {
-        return std::chrono::duration_cast<T>
-          (std::chrono::high_resolution_clock::now() - m_start).count();
-    }
-};
-
-template<typename T, class R, typename FI>
-void
-sequence_shuffle(FI first, FI last, R& rng, T val = 0)
-{
-    std::iota(first, last, val);
-    std::shuffle(first, last, rng);
-}
-
-template<typename T, class R>
-std::vector<T>
-make_random_sequence(size_t n)
-{
-	R rng;
-	std::vector<std::size_t> vec(n);
-
-	sequence_shuffle<std::size_t>(vec.begin(), vec.end(), rng);
-	return std::move(vec);
-}
-
+using std::map;
+using std::vector;
+using std::string;
+using std::size_t;
+using std::forward_list;
 
 namespace Benchmark
 {
 
-struct NoTrack
-{};
-
+using namespace std::chrono;
+using std::minstd_rand;
 
 template<typename F, typename... P>
 static auto
-emit(F&& f, P&&... args) -> decltype(static_cast<F&&>(f)(
-	static_cast<P&&>(args)...))
+emit(F&& f, P&&... args)
+	-> decltype(static_cast<F&&>(f)(static_cast<P&&>(args)...))
 {
 	static_cast<F&&>(f)(static_cast<P&&>(args)...);
 }
 template<typename F, typename... P>
 static auto
-emit(F&& f, P&&... args) -> decltype(static_cast<F&&>(f).emit(
-	static_cast<P&&>(args)...))
+emit(F&& f, P&&... args)
+	-> decltype(static_cast<F&&>(f).emit(static_cast<P&&>(args)...))
 {
 	static_cast<F&&>(f).emit(static_cast<P&&>(args)...);
 }
@@ -102,130 +49,160 @@ emit(int, P&&...)
 {}
 
 
+template<typename T, class R>
+vector<T>
+make_random_sequence(size_t n)
+{
+	R rng;
+	vector<size_t> vec(n);
+
+	std::iota(vec.begin(), vec.end(), size_t());
+	std::shuffle(vec.begin(), vec.end(), rng);
+	return std::move(vec);
+}
+
+inline high_resolution_clock::time_point
+get_now()
+{
+	return high_resolution_clock::now();
+}
+
+template<typename F, typename LimitType, typename Ret = double>
+NOINLINE Ret
+do_test(F f, LimitType limit)
+{
+	size_t cnt(1);
+	auto elapsed = LimitType();
+
+	for(; elapsed < limit; ++cnt)
+		elapsed += duration_cast<LimitType>(f());
+	return duration_cast<duration<Ret>>(elapsed / cnt).count();
+}
+
+template<typename F, typename LimitType, typename Ret = double>
+NOINLINE Ret
+do_test_combined(F f, LimitType limit)
+{
+	size_t cnt(1);
+	auto elapsed = LimitType();
+
+	for(auto now(get_now());
+		(elapsed = duration_cast<LimitType>(get_now() - now)) < limit; ++cnt)
+		f();
+	return duration_cast<duration<Ret>>(elapsed / cnt).count();
+}
+
+
+struct NoTrack
+{};
+
+
 template<class Subject, class Base = NoTrack>
 class SignalSlotBenchmark : public Base
 {
 public:
-	using Foo = Benchmark::SignalSlotBenchmark<Subject, Base>;
-    static chrono_timer timer;
+	using ThisType = Benchmark::SignalSlotBenchmark<Subject, Base>;
 
-	NOINLINE(void handler(Rng_t& rng))
-    {
-        volatile std::size_t a = rng();
+	nanoseconds Limit{milliseconds(8)};
 
-		static_cast<void>(a);
-    }
-
-	NOINLINE(static void do_connect(Subject& subject, Foo& foo))
+	NOINLINE void
+	handler(minstd_rand& rng)
 	{
-		connect(subject, &Foo::handler, foo);
+		volatile size_t r = rng();
+
+		static_cast<void>(r);
 	}
 
-    NOINLINE(static double construction(std::size_t N))
-    {
-        std::size_t count = 1, elapsed = 0;
+	static void
+	do_connect(Subject& subject, ThisType& b)
+	{
+		connect(subject, &ThisType::handler, b);
+	}
 
-        for (; elapsed < g_limit; ++count)
-        {
-            timer.reset();
-
+	double
+	construction(size_t n)
+	{
+		return n / do_test([this, n]{
 			std::unique_ptr<Subject> subject(new Subject());
-            std::vector<Foo> foo_array(N);
+			vector<ThisType> arr(n);
+			auto now(get_now());
 
-			do_connect(*subject, foo_array.back());
-            elapsed += timer.count<Timer_u>();
-        }
-        return N / std::chrono::duration_cast<Delta_u>
-            (Timer_u(g_limit / count)).count();
-    }
+			do_connect(*subject, arr.back());
+			return get_now() - now;
+		}, Limit);
+	}
 
-	NOINLINE(static double destruction(std::size_t N))
-    {
-        auto randomized(make_random_sequence<std::size_t, Rng_t>(N));
-		Rng_t rng;
-        std::size_t count = 1, elapsed = 0;
+	double
+	destruction(size_t n)
+	{
+		auto randomized(make_random_sequence<size_t, minstd_rand>(n));
 
-        for (; elapsed < g_limit; ++count)
-        {
-            {
-                std::unique_ptr<Subject> subject(new Subject());
-                std::vector<Foo> foo_array(N);
+		return n / do_test([&, this, n]{
+			auto now(get_now());
+			{
+				std::unique_ptr<Subject> subject(new Subject());
+				vector<ThisType> arr(n);
 
-                for (auto index : randomized)
-					Foo::do_connect(*subject, foo_array[index]);
-                timer.reset();
-            }
-            elapsed += timer.count<Timer_u>();
-        }
-        return N / std::chrono::duration_cast<Delta_u>
-            (Timer_u(g_limit / count)).count();
-    }
+				for(const auto index : randomized)
+					ThisType::do_connect(*subject, arr[index]);
+				now = get_now();
+			}
+			return get_now() - now;
+		}, Limit);
+	}
 
-    NOINLINE(static double connection(std::size_t N))
-    {
-        auto randomized(make_random_sequence<std::size_t, Rng_t>(N));
-		Rng_t rng;
-        std::size_t count = 1, elapsed = 0;
+	double
+	connection(size_t n)
+	{
+		auto randomized(make_random_sequence<size_t, minstd_rand>(n));
 
-        for (; elapsed < g_limit; ++count)
-        {
-            Subject subject;
-            std::vector<Foo> foo_array(N);
+		return n / do_test([&, this, n]{
+			Subject subject;
+			vector<ThisType> arr(n);
+			auto now(get_now());
 
-            timer.reset();
-            for (auto index : randomized)
-				do_connect(subject, foo_array[index]);
-            elapsed += timer.count<Timer_u>();
-        }
-        return N / std::chrono::duration_cast<Delta_u>
-            (Timer_u(g_limit / count)).count();
-    }
+			for(const auto index : randomized)
+				do_connect(subject, arr[index]);
+			return get_now() - now;
+		}, Limit);
+	}
 
-    NOINLINE(static double emission(std::size_t N))
-    {
-        auto randomized(make_random_sequence<std::size_t, Rng_t>(N));
-		Rng_t rng;
-        std::size_t count = 1, elapsed = 0;
+	double
+	emission(size_t n)
+	{
+		auto randomized(make_random_sequence<size_t, minstd_rand>(n));
+		minstd_rand rng;
 
-        for (; elapsed < g_limit; ++count)
-        {
-            Subject subject;
-            std::vector<Foo> foo_array(N);
+		return n / do_test([&, this, n]{
+			Subject subject;
+			vector<ThisType> arr(n);
 
-            for (auto index : randomized)
-				do_connect(subject, foo_array[index]);
-            timer.reset();
-            emit(subject, rng);
-            elapsed += timer.count<Timer_u>();
-        }
-        return N / std::chrono::duration_cast<Delta_u>
-            (Timer_u(g_limit / count)).count();
-    }
+			for(auto index : randomized)
+				do_connect(subject, arr[index]);
 
-    NOINLINE(static double combined(std::size_t N))
-    {
-        auto randomized(make_random_sequence<std::size_t, Rng_t>(N));
-		Rng_t rng;
-        std::size_t count = 1;
+			auto now(get_now());
 
-        timer.reset();
+			emit(subject, rng);
+			return get_now() - now;
+		}, Limit);
+	}
 
-        for (; g_limit > timer.count<Timer_u>(); ++count)
-        {
-            Subject subject;
-            std::vector<Foo> foo_array(N);
+	double
+	combined(size_t n)
+	{
+		auto randomized(make_random_sequence<size_t, minstd_rand>(n));
+		minstd_rand rng;
 
-            for (auto index : randomized)
-				do_connect(subject, foo_array[index]);
-            emit(subject, rng);
-        }
-        return N / std::chrono::duration_cast<Delta_u>
-            (Timer_u(g_limit / count)).count();
-    }
+		return n / do_test_combined([&, this, n]{
+			Subject subject;
+			vector<ThisType> arr(n);
+
+			for(const auto index : randomized)
+				do_connect(subject, arr[index]);
+			emit(subject, rng);
+		}, Limit);
+	}
 };
-
-template<class Subject, class Base>
-chrono_timer SignalSlotBenchmark<Subject, Base>::timer;
 
 } // namespace Benchmark;
 
